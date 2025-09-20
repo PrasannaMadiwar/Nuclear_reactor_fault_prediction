@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Analysis Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        /* Dynamic background with matrix effect */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -2;
+            opacity: 0.1;
+        }
+        
+        .matrix-bg canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(0, 255, 0, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255, 0, 255, 0.2) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a0a 0%, #1a2e1a 50%, #2e1a3e 100%);
+            animation: backgroundPulse 8s ease-in-out infinite;
+            z-index: -1;
+        }
+        
+        @keyframes backgroundPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #00ff41 0%, #ff0080 50%, #8000ff 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: neonGlow 2s ease-in-out infinite alternate;
+            text-shadow: 0 0 50px rgba(0, 255, 65, 0.5);
+            margin-bottom: 20px;
+        }
+        
+        @keyframes neonGlow {
+            from { filter: brightness(1) hue-rotate(0deg); }
+            to { filter: brightness(1.2) hue-rotate(10deg); }
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        /* Holographic status display */
+        .status-panel {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .status-panel::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ff41, #ff0080, #8000ff, #00ff41);
+            background-size: 300% 300%;
+            border-radius: 25px;
+            z-index: -1;
+            animation: borderGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes borderGlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .status-safe {
+            box-shadow: 
+                0 0 50px rgba(0, 255, 65, 0.3),
+                inset 0 0 50px rgba(0, 255, 65, 0.1);
+        }
+        
+        .status-safe::before {
+            background: linear-gradient(45deg, #00ff41, #4CAF50, #00ff41, #4CAF50);
+        }
+        
+        .status-warning {
+            box-shadow: 
+                0 0 50px rgba(255, 165, 0, 0.3),
+                inset 0 0 50px rgba(255, 165, 0, 0.1);
+        }
+        
+        .status-warning::before {
+            background: linear-gradient(45deg, #ff9800, #ffa726, #ff9800, #ffa726);
+        }
+        
+        .status-critical {
+            box-shadow: 
+                0 0 50px rgba(255, 0, 0, 0.5),
+                inset 0 0 50px rgba(255, 0, 0, 0.2);
+            animation: criticalPulse 1s ease-in-out infinite alternate;
+        }
+        
+        .status-critical::before {
+            background: linear-gradient(45deg, #ff0000, #ff4444, #ff0000, #ff4444);
+        }
+        
+        @keyframes criticalPulse {
+            from { 
+                transform: scale(1);
+                box-shadow: 0 0 50px rgba(255, 0, 0, 0.5);
+            }
+            to { 
+                transform: scale(1.05);
+                box-shadow: 0 0 80px rgba(255, 0, 0, 0.8);
+            }
+        }
+        
+        .status-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .status-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .status-description {
+            font-size: 1rem;
+            opacity: 0.8;
+            text-align: center;
+        }
+        
+        /* Prediction cards with 3D effect */
+        .prediction-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform-style: preserve-3d;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .prediction-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: cardSweep 3s infinite;
+        }
+        
+        @keyframes cardSweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .prediction-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .prediction-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #00ffff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .prediction-value {
+            font-size: 3rem;
+            font-weight: 900;
+            margin: 20px 0;
+            background: linear-gradient(135deg, #00ff41 0%, #00ffff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+        }
+        
+        /* Animated confidence meter */
+        .confidence-container {
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        .confidence-circle {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .confidence-circle svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+        
+        .confidence-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 8;
+        }
+        
+        .confidence-fill {
+            fill: none;
+            stroke: #00ff41;
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 377;
+            stroke-dashoffset: 377;
+            animation: fillConfidence 2s ease-out forwards;
+            filter: drop-shadow(0 0 10px #00ff41);
+        }
+        
+        @keyframes fillConfidence {
+            to {
+                stroke-dashoffset: calc(377 - (377 * var(--confidence)) / 100);
+            }
+        }
+        
+        .confidence-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        /* Data grid with hologram effect */
+        .data-section {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            position: relative;
+        }
+        
+        .data-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ffff, transparent);
+            animation: scanLine 2s linear infinite;
+        }
+        
+        @keyframes scanLine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .data-section h3 {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #00ffff 0%, #ff00ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .data-item {
+            background: rgba(0, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .data-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .data-item:hover::before {
+            left: 100%;
+        }
+        
+        .data-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.2);
+            border-color: rgba(0, 255, 255, 0.5);
+        }
+        
+        .data-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+            margin-bottom: 8px;
+            color: #00ffff;
+        }
+        
+        .data-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Futuristic action buttons */
+        .action-section {
+            text-align: center;
+            margin-top: 50px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            padding: 18px 40px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            min-width: 200px;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00ff41 0%, #00ffff 100%);
+            color: #000;
+            box-shadow: 0 10px 30px rgba(0, 255, 65, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(0, 255, 65, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #ff0080 0%, #8000ff 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(255, 0, 128, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(255, 0, 128, 0.4);
+        }
+        
+        .btn-tertiary {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+        
+        .btn-tertiary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+        }
+        
+        /* Terminal-style timestamp */
+        .timestamp {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            color: #00ff41;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            animation: terminalBlink 2s infinite;
+        }
+        
+        @keyframes terminalBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .quantum-loader {
+            width: 100px;
+            height: 100px;
+            position: relative;
+        }
+        
+        .quantum-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            border-top: 3px solid #00ff41;
+            border-radius: 50%;
+            animation: quantumSpin 1s linear infinite;
+        }
+        
+        .quantum-ring:nth-child(2) {
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
+            border-top-color: #00ffff;
+            animation-duration: 1.5s;
+            animation-direction: reverse;
+        }
+        
+        .quantum-ring:nth-child(3) {
+            width: 60%;
+            height: 60%;
+            top: 20%;
+            left: 20%;
+            border-top-color: #ff0080;
+            animation-duration: 2s;
+        }
+        
+        @keyframes quantumSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg">
+        <canvas id="matrixCanvas"></canvas>
+    </div>
+    <div class="background"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🔮 QUANTUM ANALYSIS COMPLETE</h1>
+        </div>
+        
+        <div class="results-grid">
+            <!-- Main Status Panel -->
+            <div class="status-panel status-{{ status_class }}" id="statusPanel">
+                <div class="status-icon" id="statusIcon">
+                    {% if status_class == 'critical' %}🔴
+                    {% elif status_class == 'warning' %}🟡
+                    {% else %}🟢{% endif %}
+                </div>
+                <div class="status-text" id="statusText">{{ status }}</div>
+                <div class="status-description" id="statusDesc">
+                    {% if status_class == 'critical' %}
+                        Immediate action required - System anomaly detected
+                    {% elif status_class == 'warning' %}
+                        Monitor parameters closely - Deviation detected
+                    {% else %}
+                        All parameters within safe operational limits
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Prediction Card -->
+            <div class="prediction-card">
+                <h3>🎯 AI PREDICTION</h3>
+                <div class="prediction-value" id="predictionValue">{{ pred if pred is defined else 'SAFE' }}</div>
+                <p>Neural network classification result</p>
+            </div>
+            
+            <!-- Confidence Meter -->
+            <div class="prediction-card">
+                <h3>🧠 CONFIDENCE LEVEL</h3>
+                <div class="confidence-container">
+                    <div class="confidence-circle">
+                        <svg>
+                            <circle cx="60" cy="60" r="50" class="confidence-bg"></circle>
+                            <circle cx="60" cy="60" r="50" class="confidence-fill" 
+                                    style="--confidence: {{ (pred_proba * 100)|round if pred_proba is defined else 95 }}"></circle>
+                        </svg>
+                        <div class="confidence-text">{{ "%.1f"|format(pred_proba * 100) if pred_proba is defined else '95.2' }}%</div>
+                    </div>
+                </div>
+                <p>Model prediction accuracy</p>
+            </div>
+        </div>
+        
+        <!-- Data Analysis Section -->
+        <div class="data-section">
+            <h3>📊 REACTOR TELEMETRY DATA</h3>
+            <div class="data-grid">
+                <div class="data-item">
+                    <div class="data-label">🌡️ Core Temperature</div>
+                    <div class="data-value">{{ inputs[0] if inputs is defined else '--' }}°C</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">💧 Coolant Flow</div>
+                    <div class="data-value">{{ inputs[1] if inputs is defined else '--' }} L/s</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">⚡ System Pressure</div>
+                    <div class="data-value">{{ inputs[2] if inputs is defined else '--' }} MPa</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">☢️ Radiation Level</div>
+                    <div class="data-value">{{ inputs[3] if inputs is defined else '--' }} μSv/h</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">⚙️ Turbine Speed</div>
+                    <div class="data-value">{{ inputs[4] if inputs is defined else '--' }} RPM</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">🔄 Pump Status</div>
+                    <div class="data-value">{{ 'ACTIVE' if inputs[5] == '1' else 'INACTIVE' if inputs is defined else '--' }}</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">⚡ Power Output</div>
+                    <div class="data-value">{{ inputs[6] if inputs is defined else '--' }} MW</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">🎛️ Control Rods</div>
+                    <div class="data-value">{{ inputs[7] if inputs is defined else '--' }}%</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">💨 Steam Flow</div>
+                    <div class="data-value">{{ inputs[8] if inputs is defined else '--' }} kg/s</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">📳 Vibration</div>
+                    <div class="data-value">{{ inputs[9] if inputs is defined else '--' }} mm/s</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">🌊 Water Level</div>
+                    <div class="data-value">{{ inputs[10] if inputs is defined else '--' }} m</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-section">
+            <div class="action-buttons">
+                <a href="/" class="btn btn-primary">🔄 NEW ANALYSIS</a>
+                <button class="btn btn-secondary" onclick="downloadReport()">📄 EXPORT REPORT</button>
+                <button class="btn btn-tertiary" onclick="window.print()">🖨️ PRINT DATA</button>
+            </div>
+            
+            <div class="timestamp">
+                <strong>ANALYSIS TIMESTAMP:</strong> <span id="timestamp"></span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="quantum-loader">
+            <div class="quantum-ring"></div>
+            <div class="quantum-ring"></div>
+            <div class="quantum-ring"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Matrix rain effect
+        function createMatrixEffect() {
+            const canvas = document.getElementById('matrixCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const letters = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const fontSize = 10;
+            const columns = canvas.width / fontSize;
+            const drops = [];
+            
+            for (let x = 0; x < columns; x++) {
+                drops[x] = 1;
+            }
+            
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#00ff41';
+                ctx.font = fontSize + 'px monospace';
+                
+                for (let i = 0; i < drops.length; i++) {
+                    const text = letters[Math.floor(Math.random() * letters.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+            
+            setInterval(draw, 33);
+        }
+        
+        // Initialize effects
+        createMatrixEffect();
+        
+        // Set timestamp
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        
+        // Dynamic status updates and force correct styling
+        function updateStatus() {
+            const statusPanel = document.getElementById('statusPanel');
+            const predictionText = document.getElementById('predictionValue').textContent;
+            
+            // Force correct styling based on prediction
+            if (predictionText.includes('ANOMALY') || predictionText.includes('ANAMOLY')) {
+                statusPanel.className = 'status-panel status-critical';
+                statusPanel.style.animation = 'criticalPulse 1s ease-in-out infinite alternate';
+                statusPanel.style.boxShadow = '0 0 50px rgba(255, 0, 0, 0.5), inset 0 0 50px rgba(255, 0, 0, 0.2)';
+                
+                // Update text and icon if they're not already set
+                const statusText = document.getElementById('statusText');
+                const statusIcon = document.getElementById('statusIcon');
+                const statusDesc = document.getElementById('statusDesc');
+                
+                if (statusText.textContent !== 'CRITICAL') {
+                    statusText.textContent = 'CRITICAL ALERT';
+                    statusIcon.textContent = '🔴';
+                    statusDesc.textContent = 'Immediate action required - System anomaly detected';
+                }
+            } else if (predictionText.includes('NORMAL')) {
+                statusPanel.className = 'status-panel status-safe';
+                statusPanel.style.animation = '';
+                statusPanel.style.boxShadow = '0 0 50px rgba(0, 255, 65, 0.3), inset 0 0 50px rgba(0, 255, 65, 0.1)';
+            }
+        }
+        
+        // Download report function
+        function downloadReport() {
+            const reportData = {
+                timestamp: new Date().toISOString(),
+                prediction: document.getElementById('predictionValue').textContent,
+                confidence: document.querySelector('.confidence-text').textContent,
+                status: document.getElementById('statusText').textContent
+            };
+            
+            const blob = new Blob([JSON.stringify(reportData, null, 2)], {type: 'application/json'});
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'reactor_analysis_report.json';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+        
+        // Initialize page
+        updateStatus();
+        
+        // Resize canvas on window resize
+        window.addEventListener('resize', function() {
+            const canvas = document.getElementById('matrixCanvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // Add loading effect for actions
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if (!this.href && this.textContent.includes('EXPORT')) {
+                    const overlay = document.getElementById('loadingOverlay');
+                    overlay.style.display = 'flex';
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                    }, 2000);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

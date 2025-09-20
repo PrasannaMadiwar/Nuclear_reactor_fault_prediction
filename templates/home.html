@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuclear Reactor Control Center</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        /* Animated Background */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            animation: backgroundShift 20s ease-in-out infinite;
+            z-index: -2;
+        }
+        
+        @keyframes backgroundShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(2deg); }
+        }
+        
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(0, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.5; }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Header with 3D effect */
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 40px 0;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+        }
+        
+        .header h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #00ffff 0%, #ff00ff 50%, #ffff00 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease-in-out infinite;
+            margin-bottom: 15px;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            position: relative;
+            z-index: 2;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .header p {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+            background: linear-gradient(90deg, rgba(255,255,255,0.8) 0%, rgba(0,255,255,0.8) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.7;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Glassmorphism form container */
+        .form-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1),
+                0 0 100px rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, 
+                transparent 40%, 
+                rgba(0, 255, 255, 0.03) 50%, 
+                transparent 60%);
+            animation: shine 6s linear infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        .warning {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 152, 0, 0.2) 100%);
+            border: 2px solid rgba(255, 193, 7, 0.5);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            animation: warningPulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes warningPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 193, 7, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(255, 193, 7, 0.6); }
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .form-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #00ffff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-group input, 
+        .form-group select {
+            width: 100%;
+            padding: 18px 25px;
+            border: none;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            position: relative;
+        }
+        
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .form-group input:focus, 
+        .form-group select:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(0, 255, 255, 0.6);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.3),
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+            transform: translateY(-3px) scale(1.02);
+        }
+        
+        .form-group select {
+            cursor: pointer;
+        }
+        
+        .form-group select option {
+            background: #1a1a2e;
+            color: white;
+            padding: 10px;
+        }
+        
+        /* Animated submit button */
+        .submit-btn {
+            background: linear-gradient(135deg, #ff006e 0%, #8338ec 50%, #3a86ff 100%);
+            background-size: 300% 300%;
+            color: white;
+            padding: 20px 50px;
+            border: none;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(255, 0, 110, 0.3);
+            animation: buttonGradient 3s ease-in-out infinite;
+        }
+        
+        @keyframes buttonGradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 
+                0 20px 50px rgba(255, 0, 110, 0.4),
+                0 0 50px rgba(131, 56, 236, 0.3);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+        
+        .unit {
+            font-size: 0.9em;
+            opacity: 0.7;
+            margin-left: 8px;
+            color: rgba(0, 255, 255, 0.8);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .form-container {
+                padding: 25px;
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 20px 0;
+            }
+        }
+        
+        /* Loading animation */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0, 255, 255, 0.3);
+            border-top: 4px solid #00ffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>⚛️ QUANTUM REACTOR</h1>
+            <p>Advanced Neural Monitoring System</p>
+            <div class="subtitle">Real-time AI-Powered Safety Analysis</div>
+        </div>
+        
+        <div class="form-container">
+            <div class="warning">
+                <strong>⚠️ CLASSIFIED SYSTEM</strong><br>
+                Authorized Personnel Only • All Parameters Monitored
+            </div>
+            
+            <form action="/predict" method="POST" id="reactorForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="reactor_temp">🌡️ Reactor Core Temperature <span class="unit">(°C)</span></label>
+                        <input type="number" step="0.01" name="Reactor Temp (°C)" id="reactor_temp" placeholder="Enter temperature..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="coolant_flow">💧 Coolant Flow Rate <span class="unit">(L/s)</span></label>
+                        <input type="number" step="0.01" name="Coolant Flow Rate (L/s)" id="coolant_flow" placeholder="Flow rate..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pressure">⚡ System Pressure <span class="unit">(MPa)</span></label>
+                        <input type="number" step="0.01" name="Pressure (MPa)" id="pressure" placeholder="Pressure reading..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="radiation">☢️ Radiation Level <span class="unit">(μSv/h)</span></label>
+                        <input type="number" step="0.01" name="Radiation Level (μSv/h)" id="radiation" placeholder="Radiation measurement..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="turbine_speed">⚙️ Turbine Velocity <span class="unit">(RPM)</span></label>
+                        <input type="number" step="0.01" name="Turbine Speed (RPM)" id="turbine_speed" placeholder="Turbine speed..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pump_status">🔄 Primary Pump Status</label>
+                        <select name="Pump Status" id="pump_status" required>
+                            <option value="">Select Status</option>
+                            <option value="1">🟢 ACTIVE</option>
+                            <option value="0">🔴 INACTIVE</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="power_output">⚡ Power Generation <span class="unit">(MW)</span></label>
+                        <input type="number" step="0.01" name="Power Output (MW)" id="power_output" placeholder="Power output..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="control_rod">🎛️ Control Rod Depth <span class="unit">(%)</span></label>
+                        <input type="number" step="0.01" min="0" max="100" name="Control Rod Position (%)" id="control_rod" placeholder="Rod position..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="steam_flow">💨 Steam Generation Rate <span class="unit">(kg/s)</span></label>
+                        <input type="number" step="0.01" name="Steam Flow Rate (kg/s)" id="steam_flow" placeholder="Steam flow..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="vibration">📳 Structural Vibration <span class="unit">(mm/s)</span></label>
+                        <input type="number" step="0.01" name="Vibration Level (mm/s)" id="vibration" placeholder="Vibration level..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="water_level">🌊 Coolant Water Level <span class="unit">(m)</span></label>
+                        <input type="number" step="0.01" name="Water Level (m)" id="water_level" placeholder="Water level..." required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    🚀 INITIATE QUANTUM ANALYSIS
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+    
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Initialize particles
+        createParticles();
+        
+        // Form submission with loading animation
+        document.getElementById('reactorForm').addEventListener('submit', function(e) {
+            document.getElementById('loading').style.display = 'block';
+        });
+        
+        // Add input focus effects
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+                this.parentElement.style.zIndex = '10';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+                this.parentElement.style.zIndex = '1';
+            });
+        });
+        
+        // Add typing sound effect simulation
+        inputs.forEach(input => {
+            if (input.type !== 'select-one') {
+                input.addEventListener('input', function() {
+                    // Visual feedback on input
+                    this.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.5)';
+                    setTimeout(() => {
+                        this.style.boxShadow = '';
+                    }, 150);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
